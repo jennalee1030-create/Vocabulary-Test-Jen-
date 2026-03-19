@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VocabDeck Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;0,700;1,300;1,500&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f5f0;--ink:#1a1814;--ink2:#6b6760;--ink3:#a8a49f;
+  --card:#fff;--card2:#f0ede8;--border:#e2ddd8;--border2:#ccc8c2;
+  --accent:#2d5a3d;--al:#e8f0eb;
+  --red:#c0392b;--rl:#fdf0ef;
+  --r:14px;--rs:8px;
+  --serif:'Fraunces',Georgia,serif;
+  --sans:'DM Sans',sans-serif;
+  --mono:'DM Mono',monospace;
+}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);min-height:100vh}
+body::before{content:'';position:fixed;inset:0;opacity:.025;pointer-events:none;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");}
+.wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:0 20px 80px}
+
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;padding:26px 0 22px;border-bottom:1.5px solid var(--border);margin-bottom:32px}
+.logo{display:flex;align-items:baseline;gap:6px;cursor:pointer}
+.logo-word{font-family:var(--serif);font-size:21px;font-weight:700;letter-spacing:-.5px}
+.logo-pro{font-size:11px;font-weight:600;letter-spacing:2px;color:var(--accent);text-transform:uppercase;padding:2px 7px;border:1.5px solid var(--accent);border-radius:4px}
+.hdr-r{display:flex;gap:8px;align-items:center}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--rs);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn-p{background:var(--accent);color:#fff}.btn-p:hover{background:#234a31;transform:translateY(-1px)}
+.btn-g{background:transparent;color:var(--ink);border:1.5px solid var(--border2)}.btn-g:hover{background:var(--card2)}
+.btn-d{background:transparent;color:var(--red);border:1.5px solid #f5c6c3}.btn-d:hover{background:var(--rl)}
+.btn-sm{padding:7px 13px;font-size:12.5px}.btn-xs{padding:5px 10px;font-size:12px}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+
+/* VIEWS */
+.view{animation:fadeUp .25s ease}.hidden{display:none!important}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* HOME */
+.home-hero{margin-bottom:28px}
+.home-hero h1{font-family:var(--serif);font-size:30px;font-weight:700;letter-spacing:-1px;margin-bottom:5px}
+.home-hero p{color:var(--ink2);font-size:14px}
+.home-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.set-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.set-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:20px 16px;cursor:pointer;transition:all .18s;position:relative}
+.set-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.07)}
+.set-card-title{font-family:var(--serif);font-size:17px;font-weight:700;margin-bottom:5px;letter-spacing:-.3px;padding-right:24px;line-height:1.3}
+.set-card-meta{font-size:12px;color:var(--ink2)}
+.set-del{position:absolute;top:12px;right:12px;background:none;border:none;cursor:pointer;color:var(--ink3);font-size:14px;padding:3px 6px;border-radius:4px;transition:color .15s;line-height:1}
+.set-del:hover{color:var(--red)}
+.empty-state{text-align:center;padding:56px 20px;color:var(--ink2);grid-column:1/-1}
+.empty-state .ei{font-size:40px;margin-bottom:12px}
+.empty-state p{font-size:14px;line-height:1.7}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:var(--card);border-radius:var(--r);padding:26px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.modal h2{font-family:var(--serif);font-size:21px;font-weight:700;margin-bottom:18px;letter-spacing:-.5px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:11.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--ink2);margin-bottom:5px}
+.field input,.field textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border2);border-radius:var(--rs);font-family:var(--sans);font-size:14px;color:var(--ink);background:var(--bg);outline:none;transition:border-color .2s}
+.field input:focus,.field textarea:focus{border-color:var(--accent)}
+.field textarea{height:160px;resize:vertical;font-family:var(--mono);font-size:12.5px;line-height:1.6}
+.field-hint{font-size:11.5px;color:var(--ink3);margin-top:4px}
+.drop-area{border:2px dashed var(--border2);border-radius:var(--rs);padding:18px;text-align:center;cursor:pointer;transition:all .2s;font-size:13px;color:var(--ink2)}
+.drop-area:hover,.drop-area.over{border-color:var(--accent);background:var(--al);color:var(--accent)}
+.modal-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);flex-wrap:wrap}
+input[type=file]{display:none}
+
+/* STUDY */
+.study-hdr{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.back-btn{background:none;border:1.5px solid var(--border2);border-radius:var(--rs);padding:7px 13px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;color:var(--ink2);transition:all .15s;white-space:nowrap}
+.back-btn:hover{color:var(--ink)}
+.study-title{font-family:var(--serif);font-size:19px;font-weight:700;letter-spacing:-.3px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;background:var(--card2);border:1.5px solid var(--border);border-radius:var(--r);padding:4px;margin-bottom:22px}
+.tab{padding:8px 4px;border-radius:var(--rs);border:none;background:transparent;font-family:var(--sans);font-size:11.5px;font-weight:500;color:var(--ink2);cursor:pointer;transition:all .15s;text-align:center;line-height:1.3}
+.tab .ti{display:block;font-size:14px;margin-bottom:2px}
+.tab:hover{color:var(--ink);background:var(--card)}
+.tab.active{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08);font-weight:600}
+
+.prog-row{display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);margin-bottom:6px}
+.prog-track{height:3px;background:var(--border);border-radius:99px;margin-bottom:20px;overflow:hidden}
+.prog-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+
+/* FLASHCARD */
+.fc-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.fc-dir{display:flex;background:var(--card2);border:1px solid var(--border);border-radius:var(--rs);overflow:hidden}
+.fc-dir-btn{padding:6px 13px;font-size:12px;font-weight:600;border:none;background:transparent;color:var(--ink2);cursor:pointer;font-family:var(--sans);transition:all .15s}
+.fc-dir-btn.active{background:var(--card);color:var(--ink)}
+.fc-shuf{font-size:12px;color:var(--ink2);cursor:pointer;background:none;border:1px solid var(--border);border-radius:var(--rs);padding:5px 10px;font-family:var(--sans);transition:all .15s}
+.fc-shuf:hover{color:var(--ink)}
+
+.card-scene{perspective:1400px;margin-bottom:16px}
+.flashcard{width:100%;height:296px;position:relative;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.4,0,.2,1);cursor:pointer}
+.flashcard.flipped{transform:rotateY(180deg)}
+.card-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--r);border:1.5px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px 34px;text-align:center}
+.card-front{background:var(--card)}
+.card-back{background:var(--card2);transform:rotateY(180deg)}
+.card-img{width:88px;height:68px;object-fit:cover;border-radius:8px;margin-bottom:10px;border:1px solid var(--border)}
+.pos-badge{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:99px;margin-bottom:11px;display:inline-block}
+.pos-n{background:#e8f0eb;color:#2d5a3d}.pos-v{background:#e8eef7;color:#1e3a6b}
+.pos-adj{background:#f5ece6;color:#8b4513}.pos-adv{background:#fdf8e8;color:#b8860b}.pos-etc{background:var(--card2);color:var(--ink2)}
+.card-word{font-family:var(--serif);font-size:40px;font-weight:700;letter-spacing:-1.5px;line-height:1.1;margin-bottom:5px}
+.card-back .card-word{font-size:29px;color:var(--accent);font-weight:500}
+.card-sub{font-size:13px;color:var(--ink2)}
+.card-syns{margin-top:11px;display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+.syn-chip{font-size:11.5px;padding:3px 9px;background:var(--al);color:var(--accent);border-radius:99px;font-weight:500}
+.card-ex{margin-top:11px;font-size:13px;color:var(--ink2);font-style:italic;line-height:1.7;max-width:420px}
+.card-cue{position:absolute;bottom:13px;right:15px;font-size:11px;color:var(--ink3)}
+.img-btn{position:absolute;bottom:13px;left:15px;font-size:11px;color:var(--ink3);cursor:pointer;background:none;border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-family:var(--sans);transition:all .15s}
+.img-btn:hover{color:var(--accent);border-color:var(--accent)}
+
+.fc-verdict{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.vbtn{padding:12px;border-radius:var(--rs);border:1.5px solid;font-family:var(--sans);font-size:13.5px;font-weight:600;cursor:pointer;transition:all .15s}
+.vbtn-no{border-color:#f5c6c3;background:var(--rl);color:var(--red)}.vbtn-no:hover{background:#fae0de}
+.vbtn-yes{border-color:#b8d9c0;background:var(--al);color:var(--accent)}.vbtn-yes:hover{background:#d4e8da}
+.fc-nav{display:flex;align-items:center;gap:10px;margin-top:10px}
+.nav-btn{width:42px;height:42px;border-radius:50%;background:var(--card);border:1.5px solid var(--border);color:var(--ink);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.nav-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.fc-ctr{font-family:var(--mono);font-size:14px;color:var(--ink2);flex:1;text-align:center}
+
+/* QUIZ */
+.qprompt{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:32px 34px;text-align:center;margin-bottom:16px}
+.qp-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:11px}
+.qp-pos{display:inline-block;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:99px;margin-bottom:9px}
+.qp-word{font-family:var(--serif);font-size:38px;font-weight:700;letter-spacing:-1px;line-height:1.15;margin-bottom:5px}
+.qp-sub{font-size:13px;color:var(--ink2)}
+.qp-img{width:100px;height:76px;object-fit:cover;border-radius:8px;margin:0 auto 12px;display:block;border:1px solid var(--border)}
+.qp-ex{font-size:14px;color:var(--ink2);font-style:italic;line-height:1.8;margin-top:8px}
+.blank-word{display:inline-block;min-width:68px;border-bottom:2px solid var(--ink);background:var(--card2);border-radius:3px;padding:0 4px;color:transparent;vertical-align:middle}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.opt{padding:14px 15px;border-radius:var(--rs);background:var(--card);border:1.5px solid var(--border);color:var(--ink);font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;text-align:left;line-height:1.4;transition:all .15s}
+.opt:hover:not(:disabled){border-color:var(--accent);background:var(--al)}
+.opt.correct{border-color:#2d9148;background:#e6f4eb;color:#1a5c2e}
+.opt.wrong{border-color:var(--red);background:var(--rl);color:var(--red)}
+.opt:disabled{cursor:default}
+.qfb{min-height:40px;display:flex;align-items:center;justify-content:center;gap:10px;font-size:14px;font-weight:600}
+
+/* TYPING */
+.typing-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:32px 34px;text-align:center;margin-bottom:16px}
+.type-inp{width:100%;padding:14px 18px;border:2px solid var(--border2);border-radius:var(--rs);font-family:var(--mono);font-size:20px;font-weight:500;text-align:center;background:var(--card);color:var(--ink);outline:none;transition:border-color .2s;letter-spacing:.5px}
+.type-inp:focus{border-color:var(--accent)}
+.type-inp.c{border-color:#2d9148;background:#e6f4eb}
+.type-inp.w{border-color:var(--red);background:var(--rl)}
+.type-fb{min-height:36px;text-align:center;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;gap:8px;margin:10px 0}
+.type-actions{display:flex;gap:8px;justify-content:center}
+
+/* RESULTS */
+.results{text-align:center;padding:44px 20px}
+.res-h{font-family:var(--serif);font-size:34px;font-weight:700;letter-spacing:-1px;margin-bottom:6px}
+.res-sub{color:var(--ink2);margin-bottom:30px;font-size:14px}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:26px}
+.stat{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:18px 14px}
+.stat-n{font-family:var(--serif);font-size:34px;font-weight:700;line-height:1}
+.stat-n.g{color:var(--accent)}.stat-n.r{color:var(--red)}.stat-n.y{color:#b8860b}
+.stat-l{font-size:12px;color:var(--ink2);margin-top:4px}
+.res-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+
+/* IMAGE PICKER */
+.img-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px}
+.img-modal{background:var(--card);border-radius:var(--r);width:100%;max-width:580px;max-height:86vh;display:flex;flex-direction:column;overflow:hidden}
+.img-modal-head{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.img-modal-head h3{font-family:var(--serif);font-size:17px;font-weight:700;flex:1;letter-spacing:-.3px}
+.img-search-bar{display:flex;gap:8px;padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.img-search-bar input{flex:1;padding:9px 12px;border:1.5px solid var(--border2);border-radius:var(--rs);font-family:var(--sans);font-size:13.5px;outline:none;transition:border-color .2s}
+.img-search-bar input:focus{border-color:var(--accent)}
+.img-body{flex:1;overflow-y:auto;padding:16px 20px}
+.img-hint{background:var(--al);border:1px solid #b8d9c0;border-radius:var(--rs);padding:11px 14px;font-size:13px;color:#1a5c2e;margin-bottom:14px;line-height:1.6}
+.img-hint strong{font-weight:600}
+.img-cur-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.img-cur-row span{font-size:13px;color:var(--ink2);flex:1}
+.img-cur-thumb{width:48px;height:36px;object-fit:cover;border-radius:5px;border:1px solid var(--border)}
+.img-url-row{display:flex;gap:8px;margin-bottom:14px}
+.img-url-row input{flex:1;padding:8px 11px;border:1.5px solid var(--border2);border-radius:var(--rs);font-size:13px;font-family:var(--mono);outline:none;transition:border-color .2s}
+.img-url-row input:focus{border-color:var(--accent)}
+.img-preview{text-align:center;padding:8px 0}
+.img-preview img{max-width:100%;max-height:180px;border-radius:var(--rs);border:1.5px solid var(--border);object-fit:contain}
+.img-preview-lbl{font-size:12px;color:var(--ink2);margin-top:7px}
+.img-modal-foot{padding:13px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--ink);color:#fff;padding:10px 20px;border-radius:var(--rs);font-size:13.5px;font-weight:500;transition:transform .28s ease;z-index:999;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+@media(max-width:500px){
+  .tabs{grid-template-columns:repeat(3,1fr)}
+  .opts{grid-template-columns:1fr}
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .card-word{font-size:30px}
+  .qp-word{font-size:28px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="logo" onclick="goHome()">
+    <span class="logo-word">VocabDeck</span>
+    <span class="logo-pro">Pro</span>
+  </div>
+  <div class="hdr-r" id="hdrR"></div>
+</header>
+
+<!-- ① HOME -->
+<div id="homeView" class="view">
+  <div class="home-hero">
+    <h1>나의 단어 세트</h1>
+    <p>세트를 선택해 학습하거나, 새 세트를 추가하세요.</p>
+  </div>
+  <div class="home-top">
+    <div style="font-size:13px;color:var(--ink2)" id="setCountLabel"></div>
+    <button class="btn btn-p" onclick="openAdd()">＋ 새 세트 추가</button>
+  </div>
+  <div class="set-grid" id="setGrid"></div>
+</div>
+
+<!-- ② STUDY -->
+<div id="studyView" class="view hidden">
+  <div class="study-hdr">
+    <button class="back-btn" onclick="goHome()">← 목록</button>
+    <div class="study-title" id="studyTitle"></div>
+    <div style="font-size:13px;color:var(--ink2);white-space:nowrap" id="studyCnt"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" id="tab0" onclick="switchMode(0)"><span class="ti">🃏</span>플래시카드</button>
+    <button class="tab" id="tab1" onclick="switchMode(1)"><span class="ti">🎯</span>뜻 퀴즈</button>
+    <button class="tab" id="tab2" onclick="switchMode(2)"><span class="ti">📝</span>빈칸</button>
+    <button class="tab" id="tab3" onclick="switchMode(3)"><span class="ti">🔗</span>동의어</button>
+    <button class="tab" id="tab4" onclick="switchMode(4)"><span class="ti">⌨️</span>타이핑</button>
+  </div>
+  <div class="prog-row"><span id="progTxt">0 / 0</span><span id="progPct">0%</span></div>
+  <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0"></div></div>
+
+  <!-- FLASHCARD -->
+  <div id="modeFC" class="view">
+    <div class="fc-bar">
+      <div class="fc-dir">
+        <button class="fc-dir-btn active" id="fcEn" onclick="setDir('en')">영→한</button>
+        <button class="fc-dir-btn" id="fcKo" onclick="setDir('ko')">한→영</button>
+      </div>
+      <button class="fc-shuf" onclick="doShuffle()">🔀 섞기</button>
+    </div>
+    <div class="card-scene">
+      <div class="flashcard" id="flashcard" onclick="flipCard()">
+        <div class="card-face card-front">
+          <img class="card-img hidden" id="fcImg" alt="">
+          <div class="pos-badge pos-n" id="fcBadge">n</div>
+          <div class="card-word" id="fcFront">—</div>
+          <div class="card-sub" id="fcFrontSub"></div>
+          <div class="card-cue">클릭해서 뒤집기 ↺</div>
+          <button class="img-btn" id="fcImgBtn" onclick="event.stopPropagation();openImgPicker()">🖼 이미지</button>
+        </div>
+        <div class="card-face card-back">
+          <div class="pos-badge" id="fcBadge2" style="opacity:0">x</div>
+          <div class="card-word" id="fcBack">—</div>
+          <div class="card-sub" id="fcBackSub"></div>
+          <div class="card-syns" id="fcSyns"></div>
+          <div class="card-ex" id="fcEx"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-verdict hidden" id="fcVerdict">
+      <button class="vbtn vbtn-no" onclick="verdict(false)">❌ 다시 볼게요</button>
+      <button class="vbtn vbtn-yes" onclick="verdict(true)">✅ 알았어요!</button>
+    </div>
+    <div class="fc-nav">
+      <button class="nav-btn" id="fcPrev" onclick="fcNav(-1)">←</button>
+      <span class="fc-ctr" id="fcCtr">1 / 1</span>
+      <button class="nav-btn" id="fcNext" onclick="fcNav(1)">→</button>
+    </div>
+  </div>
+
+  <!-- MEANING QUIZ -->
+  <div id="modeM" class="hidden view">
+    <div class="qprompt">
+      <div class="qp-label">이 단어의 뜻은?</div>
+      <img class="qp-img hidden" id="mqImg" alt="">
+      <div class="qp-pos pos-n" id="mqPos"></div>
+      <div class="qp-word" id="mqWord">—</div>
+      <div class="qp-sub" id="mqSub"></div>
+    </div>
+    <div class="opts" id="mqOpts"></div>
+    <div class="qfb" id="mqFb"></div>
+  </div>
+
+  <!-- BLANK QUIZ -->
+  <div id="modeBL" class="hidden view">
+    <div class="qprompt">
+      <div class="qp-label">빈칸에 알맞은 단어는?</div>
+      <div class="qp-ex" id="blSentence"></div>
+      <div style="font-size:12px;color:var(--ink3);margin-top:8px" id="blHint"></div>
+    </div>
+    <div class="opts" id="blOpts"></div>
+    <div class="qfb" id="blFb"></div>
+  </div>
+
+  <!-- SYNONYM QUIZ -->
+  <div id="modeSY" class="hidden view">
+    <div class="qprompt">
+      <div class="qp-label">동의어는?</div>
+      <div class="qp-pos pos-n" id="syPos"></div>
+      <div class="qp-word" id="syWord">—</div>
+      <div class="qp-sub" id="sySub"></div>
+    </div>
+    <div class="opts" id="syOpts"></div>
+    <div class="qfb" id="syFb"></div>
+  </div>
+
+  <!-- TYPING -->
+  <div id="modeTY" class="hidden view">
+    <div class="typing-card">
+      <div class="qp-label" style="margin-bottom:10px">뜻을 보고 영어 단어를 입력하세요</div>
+      <img class="qp-img hidden" id="tyImg" alt="">
+      <div class="pos-badge pos-n" id="tyPos" style="margin-bottom:10px"></div>
+      <div style="font-family:var(--serif);font-size:26px;font-weight:500;margin-bottom:6px" id="tyMeaning">—</div>
+      <div style="font-size:13px;color:var(--ink2);font-style:italic" id="tyEx"></div>
+    </div>
+    <div class="type-fb" id="tyFb"></div>
+    <input class="type-inp" id="tyInput" type="text" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="답 입력 후 Enter">
+    <div class="type-actions" style="margin-top:10px">
+      <button class="btn btn-g btn-sm" onclick="tyReveal()">답 보기</button>
+      <button class="btn btn-p btn-sm" onclick="tyCheck()">확인 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ③ RESULTS -->
+<div id="resultsView" class="view hidden">
+  <div class="results">
+    <div class="res-h" id="resH">완료! 🎉</div>
+    <div class="res-sub" id="resSub"></div>
+    <div class="stat-grid">
+      <div class="stat"><div class="stat-n g" id="resOk">0</div><div class="stat-l">정답</div></div>
+      <div class="stat"><div class="stat-n r" id="resErr">0</div><div class="stat-l">오답</div></div>
+      <div class="stat"><div class="stat-n y" id="resPct">—</div><div class="stat-l">정답률</div></div>
+    </div>
+    <div class="res-actions">
+      <button class="btn btn-g" onclick="retryAll()">🔁 전체 다시</button>
+      <button class="btn btn-g" id="btnWrong" onclick="retryWrong()">❌ 오답만</button>
+      <button class="btn btn-p" onclick="nextMode()">다음 모드 →</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ADD SET MODAL -->
+<div class="modal-bg hidden" id="addModal">
+  <div class="modal">
+    <h2>새 세트 추가</h2>
+    <div class="field">
+      <label>세트 이름</label>
+      <input type="text" id="newName" placeholder="예: TOEFL 어휘 Week 1">
+    </div>
+    <div class="field">
+      <label>CSV 파일 업로드</label>
+      <div class="drop-area" id="dropArea">📂 파일 드래그 or 클릭<br><small style="font-size:12px;color:var(--ink3)">단어, 품사, 뜻, 동의어, 예문</small></div>
+      <input type="file" id="modalFile" accept=".csv,.txt">
+    </div>
+    <div class="field">
+      <label>또는 직접 붙여넣기</label>
+      <textarea id="newTA" placeholder="diligent,adj,부지런한,industrious/assiduous,She is a diligent student.
+perseverance,n,인내,persistence/tenacity,Success requires perseverance."></textarea>
+      <div class="field-hint">형식: 단어, 품사, 뜻, 동의어(/구분), 예문</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-g btn-sm" onclick="fillSample()">샘플</button>
+      <button class="btn btn-g" onclick="closeAdd()">취소</button>
+      <button class="btn btn-p" onclick="saveSet()">저장 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMAGE PICKER MODAL -->
+<div class="img-modal-bg hidden" id="imgModal">
+  <div class="img-modal">
+    <div class="img-modal-head">
+      <h3>🖼 이미지 설정</h3>
+      <button class="btn btn-g btn-xs" onclick="closeImg()">✕ 닫기</button>
+    </div>
+    <div class="img-search-bar">
+      <input type="text" id="imgQuery" placeholder="검색어 입력 (예: perseverance concept)">
+      <button class="btn btn-p btn-sm" onclick="searchGoogle()">구글 검색 →</button>
+    </div>
+    <div class="img-body">
+      <div class="img-hint">
+        구글 이미지에서 원하는 사진을 찾아 <strong>우클릭 → 이미지 주소 복사</strong> 후 아래에 붙여넣으세요.
+      </div>
+      <div id="imgCurRow" class="img-cur-row hidden">
+        <img class="img-cur-thumb" id="imgCurThumb" alt="">
+        <span>현재 이미지 설정됨</span>
+        <button class="btn btn-d btn-xs" onclick="clearImg()">삭제</button>
+      </div>
+      <div class="img-url-row">
+        <input type="text" id="imgUrl" placeholder="이미지 URL 붙여넣기...">
+        <button class="btn btn-g btn-sm" onclick="previewImg()">미리보기</button>
+      </div>
+      <div id="imgPreview" class="img-preview"></div>
+    </div>
+    <div class="img-modal-foot">
+      <button class="btn btn-g" onclick="closeImg()">취소</button>
+      <button class="btn btn-p" onclick="applyImg()">이 이미지 적용</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════
+//   STORAGE  (나중에 API 교체 시 이 객체만 수정)
+// ════════════════════════════════════════════
+const DB = {
+  load() { try { return JSON.parse(localStorage.getItem('vd_sets') || '[]'); } catch { return []; } },
+  save(s) { localStorage.setItem('vd_sets', JSON.stringify(s)); }
+};
+
+// ════════════════════════════════════════════
+//   STATE
+// ════════════════════════════════════════════
+let sets = DB.load();
+let activeId = null;
+let words = [], queue = [], wrongWords = [];
+let cur = 0, mode = 0, fcDir = 'en', flipped = false;
+let score = { ok: 0, err: 0 };
+let qDone = false, tyDone = false;
+let imgTarget = null;
+
+const POS_CLS = { n:'pos-n', v:'pos-v', adj:'pos-adj', adv:'pos-adv', noun:'pos-n', verb:'pos-v' };
+const pc = p => POS_CLS[(p||'').toLowerCase()] || 'pos-etc';
+const pl = p => p ? p.toLowerCase() : '—';
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const fmtDate = ts => { const d = new Date(ts); return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`; };
+const shuffle = a => { for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+
+// ════════════════════════════════════════════
+//   VIEW UTILS
+// ════════════════════════════════════════════
+function showView(id) {
+  ['homeView','studyView','resultsView'].forEach(v =>
+    document.getElementById(v).classList.toggle('hidden', v !== id));
+}
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ════════════════════════════════════════════
+//   HOME
+// ════════════════════════════════════════════
+function goHome() {
+  showView('homeView');
+  document.getElementById('hdrR').innerHTML = '';
+  renderHome();
+}
+function renderHome() {
+  const grid = document.getElementById('setGrid');
+  const lbl = document.getElementById('setCountLabel');
+  lbl.textContent = sets.length ? `${sets.length}개의 세트` : '';
+  if (!sets.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="ei">📚</div><p>아직 세트가 없어요.<br>"새 세트 추가"로 시작해보세요!</p></div>`;
+    return;
+  }
+  grid.innerHTML = sets.map(s => `
+    <div class="set-card" onclick="openSet('${s.id}')">
+      <button class="set-del" onclick="event.stopPropagation();delSet('${s.id}')" title="삭제">✕</button>
+      <div class="set-card-title">${esc(s.name)}</div>
+      <div class="set-card-meta">${s.words.length}개 단어 &nbsp;·&nbsp; ${fmtDate(s.created)}</div>
+    </div>
+  `).join('');
+}
+
+function openSet(id) {
+  activeId = id;
+  const s = sets.find(x => x.id === id);
+  if (!s) return;
+  words = s.words;
+  document.getElementById('studyTitle').textContent = s.name;
+  document.getElementById('studyCnt').textContent = `${s.words.length}개`;
+  showView('studyView');
+  switchMode(0);
+}
+
+function delSet(id) {
+  if (!confirm('이 세트를 삭제할까요?')) return;
+  sets = sets.filter(s => s.id !== id);
+  DB.save(sets);
+  renderHome();
+  toast('🗑 세트를 삭제했어요');
+}
+
+// ════════════════════════════════════════════
+//   ADD SET MODAL
+// ════════════════════════════════════════════
+function openAdd() {
+  document.getElementById('addModal').classList.remove('hidden');
+  document.getElementById('newName').value = '';
+  document.getElementById('newTA').value = '';
+}
+function closeAdd() { document.getElementById('addModal').classList.add('hidden'); }
+
+const dropArea = document.getElementById('dropArea');
+dropArea.addEventListener('click', () => document.getElementById('modalFile').click());
+dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.classList.add('over'); });
+dropArea.addEventListener('dragleave', () => dropArea.classList.remove('over'));
+dropArea.addEventListener('drop', e => {
+  e.preventDefault(); dropArea.classList.remove('over');
+  readFile(e.dataTransfer.files[0], txt => { document.getElementById('newTA').value = txt; });
+});
+document.getElementById('modalFile').addEventListener('change', e => {
+  readFile(e.target.files[0], txt => {
+    document.getElementById('newTA').value = txt;
+    const name = e.target.files[0].name.replace(/\.[^.]+$/, '');
+    if (!document.getElementById('newName').value) document.getElementById('newName').value = name;
+  });
+});
+
+function readFile(f, cb) {
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = e => {
+    const txt = e.target.result;
+    if (txt.includes('\uFFFD')) {
+      const r2 = new FileReader();
+      r2.onload = e2 => cb(e2.target.result);
+      r2.readAsText(f, 'EUC-KR');
+    } else cb(txt);
+  };
+  r.readAsText(f, 'UTF-8');
+}
+
+function saveSet() {
+  const name = document.getElementById('newName').value.trim() || '새 단어 세트';
+  const raw = document.getElementById('newTA').value;
+  const parsed = parseCSV(raw);
+  if (!parsed.length) { toast('⚠️ 단어를 찾을 수 없어요'); return; }
+  const s = { id: 'set_' + Date.now(), name, words: parsed, created: Date.now() };
+  sets.unshift(s);
+  DB.save(sets);
+  closeAdd();
+  renderHome();
+  toast(`✅ "${name}" 저장 완료 (${parsed.length}개)`);
+}
+
+function fillSample() {
+  document.getElementById('newName').value = '샘플 세트';
+  document.getElementById('newTA').value =
+`diligent,adj,부지런한,industrious/assiduous,She is a diligent student who never misses class.
+perseverance,n,인내,persistence/tenacity,Success requires great perseverance.
+magnificent,adj,장엄한,splendid/grand,The view from the top was absolutely magnificent.
+eloquent,adj,웅변의/유창한,articulate/fluent,He gave an eloquent speech that moved the audience.
+meticulous,adj,꼼꼼한/세심한,thorough/painstaking,She is meticulous about every detail of her work.
+resilient,adj,회복력 있는,tough/adaptable,Children are often more resilient than we think.
+ambiguous,adj,모호한,vague/unclear,The instructions were ambiguous and confusing.
+contemplate,v,심사숙고하다,ponder/reflect,Take time to contemplate your options before deciding.`;
+}
+
+// ════════════════════════════════════════════
+//   CSV PARSER
+// ════════════════════════════════════════════
+function parseCSV(raw) {
+  const rows = raw.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim().split('\n'), out = [];
+  for (let r of rows) {
+    r = r.trim(); if (!r || r[0] === '#') continue;
+    const cols = splitLine(r);
+    if (cols.length < 3 || !cols[0] || !cols[2]) continue;
+    out.push({ word:cols[0], pos:cols[1]||'', meaning:cols[2],
+      synonyms: cols[3] ? cols[3].split('/').map(s=>s.trim()).filter(Boolean) : [],
+      example: cols[4]||'', img:'' });
+  }
+  return out;
+}
+function splitLine(line) {
+  const cols=[]; let cur='',q=false;
+  for (let i=0;i<line.length;i++) {
+    if (line[i]==='"'){q=!q;continue}
+    if (line[i]===','&&!q){cols.push(cur.replace(/\r/g,'').trim());cur='';continue}
+    cur+=line[i];
+  }
+  cols.push(cur.replace(/\r/g,'').trim());
+  return cols;
+}
+
+// ════════════════════════════════════════════
+//   MODE SWITCH
+// ════════════════════════════════════════════
+const MODE_IDS = ['FC','M','BL','SY','TY'];
+function switchMode(m) {
+  mode=m; cur=0; score={ok:0,err:0}; wrongWords=[]; qDone=false; tyDone=false; queue=[...words];
+  MODE_IDS.forEach((id,i) => {
+    document.getElementById('mode'+id).classList.toggle('hidden', i!==m);
+    document.getElementById('tab'+i).classList.toggle('active', i===m);
+  });
+  updateProg();
+  [renderFC,renderMQ,renderBL,renderSY,renderTY][m]();
+}
+function updateProg() {
+  const total=queue.length, done=Math.min(cur,total), pct=total?Math.round(done/total*100):0;
+  document.getElementById('progTxt').textContent=`${done} / ${total}`;
+  document.getElementById('progPct').textContent=pct+'%';
+  document.getElementById('progFill').style.width=pct+'%';
+}
+
+// ════════════════════════════════════════════
+//   FLASHCARD
+// ════════════════════════════════════════════
+function setDir(d) {
+  fcDir=d;
+  document.getElementById('fcEn').classList.toggle('active',d==='en');
+  document.getElementById('fcKo').classList.toggle('active',d==='ko');
+  renderFC();
+}
+function doShuffle() { queue=shuffle([...queue]); cur=0; renderFC(); toast('🔀 섞었어요!'); }
+
+function renderFC() {
+  flipped=false;
+  document.getElementById('flashcard').classList.remove('flipped');
+  document.getElementById('fcVerdict').classList.add('hidden');
+  if (cur>=queue.length) { showResults(); return; }
+  const w=queue[cur], cls=pc(w.pos);
+  const imgEl=document.getElementById('fcImg');
+  if(w.img){imgEl.src=w.img;imgEl.classList.remove('hidden');}else imgEl.classList.add('hidden');
+  document.getElementById('fcBadge').className='pos-badge '+cls;
+  document.getElementById('fcBadge').textContent=pl(w.pos);
+  document.getElementById('fcBadge2').className='pos-badge '+cls;
+  document.getElementById('fcBadge2').style.opacity='1';
+  document.getElementById('fcBadge2').textContent=pl(w.pos);
+  if (fcDir==='en') {
+    document.getElementById('fcFront').textContent=w.word;
+    document.getElementById('fcFrontSub').textContent='';
+    document.getElementById('fcBack').textContent=w.meaning;
+    document.getElementById('fcBackSub').textContent='';
+  } else {
+    document.getElementById('fcFront').textContent=w.meaning;
+    document.getElementById('fcFrontSub').textContent=w.pos?`(${w.pos})`:'';
+    document.getElementById('fcBack').textContent=w.word;
+    document.getElementById('fcBackSub').textContent=w.pos?w.pos+'.':'';
+  }
+  document.getElementById('fcSyns').innerHTML=w.synonyms.length
+    ?w.synonyms.map(s=>`<span class="syn-chip">${esc(s)}</span>`).join(''):'';
+  document.getElementById('fcEx').textContent=w.example?`"${w.example}"`:'';
+  document.getElementById('fcCtr').textContent=`${cur+1} / ${queue.length}`;
+  document.getElementById('fcPrev').disabled=cur===0;
+  document.getElementById('fcNext').disabled=cur>=queue.length-1;
+  updateProg();
+}
+function flipCard() {
+  flipped=!flipped;
+  document.getElementById('flashcard').classList.toggle('flipped',flipped);
+  if(flipped) document.getElementById('fcVerdict').classList.remove('hidden');
+}
+function fcNav(d){cur=Math.max(0,Math.min(queue.length-1,cur+d));renderFC();}
+function verdict(ok){ok?score.ok++:(score.err++,wrongWords.push(queue[cur]));cur++;renderFC();}
+
+// ════════════════════════════════════════════
+//   MEANING QUIZ
+// ════════════════════════════════════════════
+function renderMQ() {
+  qDone=false; document.getElementById('mqFb').innerHTML='';
+  if(cur>=queue.length){showResults();return;}
+  const w=queue[cur],cls=pc(w.pos);
+  const imgEl=document.getElementById('mqImg');
+  if(w.img){imgEl.src=w.img;imgEl.classList.remove('hidden');}else imgEl.classList.add('hidden');
+  document.getElementById('mqPos').className='qp-pos '+cls;
+  document.getElementById('mqPos').textContent=pl(w.pos);
+  document.getElementById('mqWord').textContent=w.word;
+  document.getElementById('mqSub').textContent=w.synonyms[0]?`= ${w.synonyms[0]}`:'';
+  const others=shuffle(words.filter(x=>x!==w&&x.meaning!==w.meaning)).slice(0,3);
+  const opts=shuffle([{t:w.meaning,ok:true},...others.map(d=>({t:d.meaning,ok:false}))]);
+  const el=document.getElementById('mqOpts'); el.innerHTML='';
+  opts.forEach(o=>{const b=document.createElement('button');b.className='opt';b.textContent=o.t;b.onclick=()=>ansQ('mqOpts','mqFb',b,o.ok,w.meaning,()=>{cur++;renderMQ();});el.appendChild(b);});
+  updateProg();
+}
+
+// ════════════════════════════════════════════
+//   BLANK QUIZ
+// ════════════════════════════════════════════
+function makeBlankRe(word) {
+  const w = word.toLowerCase();
+  const variants = new Set([w]);
+  variants.add(w+'s'); variants.add(w+'es');
+  variants.add(w+'d'); variants.add(w+'ed'); variants.add(w+'ing');
+  variants.add(w+'er'); variants.add(w+'est'); variants.add(w+'ly');
+  if(w.endsWith('e')){variants.add(w.slice(0,-1)+'ing');variants.add(w.slice(0,-1)+'ed');variants.add(w.slice(0,-1)+'er');}
+  if(w.endsWith('y')&&w.length>2){const s=w.slice(0,-1);variants.add(s+'ies');variants.add(s+'ied');}
+  const last=w[w.length-1];
+  if(/[bcdfghjklmnpqrstvwxz]/.test(last)&&/[aeiou]/.test(w[w.length-2]||'')){variants.add(w+last+'ed');variants.add(w+last+'ing');}
+  const pattern=[...variants].sort((a,b)=>b.length-a.length).map(v=>v.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|');
+  return new RegExp('\\b('+pattern+')\\b','gi');
+}
+function renderBL() {
+  qDone=false; document.getElementById('blFb').innerHTML='';
+  while(cur<queue.length&&!queue[cur].example) cur++;
+  if(cur>=queue.length){if(!score.ok&&!score.err){toast('⚠️ 예문이 있는 단어가 없어요');switchMode(1);return;}showResults();return;}
+  const w=queue[cur];
+  const re=makeBlankRe(w.word);
+  document.getElementById('blSentence').innerHTML=
+    w.example.replace(re,m=>`<span class="blank-word">${'_'.repeat(Math.max(5,m.length))}</span>`);
+  document.getElementById('blHint').textContent=`품사: ${pl(w.pos)} · 뜻: ${w.meaning}`;
+  const others=shuffle(words.filter(x=>x!==w)).slice(0,3);
+  const opts=shuffle([{t:w.word,ok:true},...others.map(d=>({t:d.word,ok:false}))]);
+  const el=document.getElementById('blOpts'); el.innerHTML='';
+  opts.forEach(o=>{const b=document.createElement('button');b.className='opt';b.textContent=o.t;
+    b.onclick=()=>{
+      if(qDone)return; qDone=true;
+      o.ok?score.ok++:(score.err++,wrongWords.push(w));
+      document.querySelectorAll('#blOpts .opt').forEach(x=>{x.disabled=true;if(x.textContent===w.word)x.classList.add('correct');});
+      if(!o.ok)b.classList.add('wrong');
+      const re2=makeBlankRe(w.word);
+      document.getElementById('blSentence').innerHTML=
+        w.example.replace(re2,m=>`<strong style="color:var(--accent)">${m}</strong>`);
+      document.getElementById('blFb').innerHTML=o.ok
+        ?`<span style="color:var(--accent)">✅ 정답!</span><button class="btn btn-g btn-xs" style="margin-left:8px" onclick="cur++;renderBL()">다음 →</button>`
+        :`<span style="color:var(--red)">❌ 정답: <strong>${w.word}</strong></span><button class="btn btn-g btn-xs" style="margin-left:8px" onclick="cur++;renderBL()">다음 →</button>`;
+    };el.appendChild(b);});
+  updateProg();
+}
+
+// ════════════════════════════════════════════
+//   SYNONYM QUIZ
+// ════════════════════════════════════════════
+function renderSY() {
+  qDone=false; document.getElementById('syFb').innerHTML='';
+  while(cur<queue.length&&!queue[cur].synonyms.length) cur++;
+  if(cur>=queue.length){if(!score.ok&&!score.err){toast('⚠️ 동의어가 있는 단어가 없어요');switchMode(1);return;}showResults();return;}
+  const w=queue[cur],cls=pc(w.pos),csyn=w.synonyms[0];
+  document.getElementById('syPos').className='qp-pos '+cls;
+  document.getElementById('syPos').textContent=pl(w.pos);
+  document.getElementById('syWord').textContent=w.word;
+  document.getElementById('sySub').textContent=w.meaning;
+  const pool=[];
+  words.forEach(x=>{if(x!==w)x.synonyms.forEach(s=>{if(s!==csyn)pool.push(s);});});
+  while(pool.length<3){const rw=words.filter(x=>x!==w);if(!rw.length)break;pool.push(shuffle(rw)[0].word);}
+  const opts=shuffle([{t:csyn,ok:true},...shuffle(pool).slice(0,3).map(s=>({t:s,ok:false}))]);
+  const el=document.getElementById('syOpts'); el.innerHTML='';
+  opts.forEach(o=>{const b=document.createElement('button');b.className='opt';b.textContent=o.t;b.onclick=()=>ansQ('syOpts','syFb',b,o.ok,csyn,()=>{cur++;renderSY();});el.appendChild(b);});
+  updateProg();
+}
+
+// shared quiz answer handler
+function ansQ(optsId,fbId,btn,ok,correctTxt,next) {
+  if(qDone)return; qDone=true;
+  ok?score.ok++:(score.err++,wrongWords.push(queue[cur]));
+  document.querySelectorAll('#'+optsId+' .opt').forEach(b=>{b.disabled=true;if(b.textContent===correctTxt)b.classList.add('correct');});
+  if(!ok)btn.classList.add('wrong');
+  document.getElementById(fbId).innerHTML=ok
+    ?`<span style="color:var(--accent)">✅ 정답!</span><button class="btn btn-g btn-xs" style="margin-left:8px" onclick="(${next.toString()})()">다음 →</button>`
+    :`<span style="color:var(--red)">❌ 정답: <strong>${esc(correctTxt)}</strong></span><button class="btn btn-g btn-xs" style="margin-left:8px" onclick="(${next.toString()})()">다음 →</button>`;
+}
+
+// ════════════════════════════════════════════
+//   TYPING
+// ════════════════════════════════════════════
+function renderTY() {
+  tyDone=false;
+  const inp=document.getElementById('tyInput');
+  inp.value=''; inp.className='type-inp'; inp.disabled=false;
+  document.getElementById('tyFb').innerHTML='';
+  if(cur>=queue.length){showResults();return;}
+  const w=queue[cur],cls=pc(w.pos);
+  const imgEl=document.getElementById('tyImg');
+  if(w.img){imgEl.src=w.img;imgEl.classList.remove('hidden');}else imgEl.classList.add('hidden');
+  document.getElementById('tyPos').className='pos-badge '+cls;
+  document.getElementById('tyPos').textContent=pl(w.pos);
+  document.getElementById('tyMeaning').textContent=w.meaning+(w.synonyms[0]?` (= ${w.synonyms[0]})`:'');
+  document.getElementById('tyEx').textContent='';
+  updateProg();
+  setTimeout(()=>inp.focus(),50);
+}
+document.getElementById('tyInput').addEventListener('keydown',e=>{if(e.key==='Enter')tyCheck();});
+const norm=s=>s.toLowerCase().trim().replace(/[^a-z]/g,'');
+function tyCheck() {
+  if(tyDone){cur++;renderTY();return;}
+  const inp=document.getElementById('tyInput'), ans=inp.value.trim();
+  if(!ans)return;
+  const w=queue[cur],ok=norm(ans)===norm(w.word);
+  tyDone=true; inp.disabled=true;
+  inp.className='type-inp '+(ok?'c':'w');
+  ok?score.ok++:(score.err++,wrongWords.push(w));
+  document.getElementById('tyFb').innerHTML=ok
+    ?`<span style="color:var(--accent)">✅ 정답!</span>`
+    :`<span style="color:var(--red)">❌ 정답: <strong>${w.word}</strong></span>`;
+  setTimeout(()=>{cur++;renderTY();},1300);
+}
+function tyReveal() {
+  if(tyDone)return; tyDone=true;
+  const w=queue[cur]; score.err++; wrongWords.push(w);
+  const inp=document.getElementById('tyInput');
+  inp.value=w.word; inp.className='type-inp w'; inp.disabled=true;
+  document.getElementById('tyFb').innerHTML=`<span style="color:var(--ink2)">정답: <strong>${w.word}</strong></span>`;
+  setTimeout(()=>{cur++;renderTY();},1300);
+}
+
+// ════════════════════════════════════════════
+//   RESULTS
+// ════════════════════════════════════════════
+function showResults() {
+  showView('resultsView');
+  const total=score.ok+score.err, pct=total?Math.round(score.ok/total*100):0;
+  document.getElementById('resOk').textContent=score.ok;
+  document.getElementById('resErr').textContent=score.err;
+  document.getElementById('resPct').textContent=pct+'%';
+  document.getElementById('resSub').textContent=
+    pct===100?'완벽해요! 모든 단어를 맞혔어요 🏆':
+    pct>=80?'정말 잘했어요! 거의 다 외웠네요 💪':
+    pct>=60?'절반 이상 맞혔어요. 조금만 더! 🔥':
+    '계속 연습하면 반드시 늘어요. 포기하지 마세요 💙';
+  document.getElementById('btnWrong').style.display=wrongWords.length?'':'none';
+}
+function retryAll(){showView('studyView');switchMode(mode);}
+function retryWrong(){
+  if(!wrongWords.length){toast('오답이 없어요! 🎉');retryAll();return;}
+  words=[...wrongWords]; document.getElementById('studyCnt').textContent=`${words.length}개 (오답)`;
+  showView('studyView'); switchMode(mode);
+}
+function nextMode(){words=[...words,...wrongWords.filter(w=>!words.includes(w))];showView('studyView');switchMode((mode+1)%5);}
+
+// ════════════════════════════════════════════
+//   IMAGE PICKER
+// ════════════════════════════════════════════
+function openImgPicker() {
+  imgTarget=queue[cur];
+  document.getElementById('imgQuery').value=imgTarget.word+' vocabulary word';
+  document.getElementById('imgUrl').value=imgTarget.img||'';
+  document.getElementById('imgPreview').innerHTML='';
+  const curRow=document.getElementById('imgCurRow');
+  if(imgTarget.img){curRow.classList.remove('hidden');document.getElementById('imgCurThumb').src=imgTarget.img;}
+  else curRow.classList.add('hidden');
+  document.getElementById('imgModal').classList.remove('hidden');
+}
+function closeImg(){document.getElementById('imgModal').classList.add('hidden');}
+function searchGoogle(){
+  const q=document.getElementById('imgQuery').value.trim()||imgTarget.word;
+  window.open(`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(q)}`,'_blank');
+}
+function previewImg(){
+  const url=document.getElementById('imgUrl').value.trim();
+  if(!url)return;
+  document.getElementById('imgPreview').innerHTML=
+    `<img src="${esc(url)}" alt="미리보기" onerror="this.parentNode.innerHTML='<p style=color:var(--red);font-size:13px>이미지를 불러올 수 없어요</p>'">
+     <div class="img-preview-lbl">맞다면 "이 이미지 적용"을 누르세요</div>`;
+}
+function applyImg(){
+  const url=document.getElementById('imgUrl').value.trim();
+  if(!url){toast('URL을 입력해주세요');return;}
+  saveImgToWord(url);
+}
+function clearImg(){saveImgToWord('');}
+function saveImgToWord(url){
+  imgTarget.img=url;
+  const s=sets.find(x=>x.id===activeId);
+  if(s){const w=s.words.find(x=>x.word===imgTarget.word);if(w)w.img=url;DB.save(sets);}
+  closeImg();
+  renderFC();
+  toast(url?'🖼 이미지를 저장했어요!':'🗑 이미지를 삭제했어요');
+}
+
+// ════════════════════════════════════════════
+//   KEYBOARD
+// ════════════════════════════════════════════
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('addModal').classList.contains('hidden'))return;
+  if(!document.getElementById('imgModal').classList.contains('hidden'))return;
+  if(mode!==0)return;
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
+  if(e.key==='ArrowLeft')fcNav(-1);
+  if(e.key==='ArrowRight')fcNav(1);
+  if(e.key===' '){e.preventDefault();flipCard();}
+  if(e.key==='g'&&flipped)verdict(true);
+  if(e.key==='r'&&flipped)verdict(false);
+});
+
+// ════════════════════════════════════════════
+//   AUTO-LOAD BUILT-IN SET
+// ════════════════════════════════════════════
+const BUILTIN_CSV = `exploit,v.,이용하다; 착취하다,"utilize, use, make use of",Many companies exploit a country's resources without giving anything back.
+initiate,v.,시작하다,"begin, start, launch",Countries often initiate negotiations to end their conflicts.
+mature,v.,성숙해지다,"get older, grow up, age","As people mature, their personalities and interests often change."
+prominent,adj.,눈에 띄는; 중요한,"1. noticeable, conspicuous, outstanding, 2. important, leading, notable",Mt. Fuji is a prominent natural landmark in Japan.
+replenish,v.,보충하다,"refill, restore, renew",The travelers replenished their supplies of water before crossing the desert.
+indigenous,adj.,토착의,"native, aboriginal",Governments often ignore environmental complaints by indigenous groups.
+pinpoint,v. / adj.,정확히 찾아내다; 정확한,"1. locate exactly, clearly identify, 2. precise, exact, accurate","With GPS technology, it is possible to pinpoint a person's position anywhere on the planet."
+annihilate,v.,전멸시키다,"destroy, completely remove, exterminate",A single disaster can annihilate entire species from the planet.
+conversely,adv.,반대로,"on the other hand, contrarily","Texting is growing more popular as a form of communication while, conversely, phone calls are becoming less common."
+investigate,v.,조사하다,"examine, inquire into, look into",Detectives investigate crime scenes and interview witnesses.
+assure,v.,확신시키다; 보장하다,"convince, persuade, satisfy; guarantee",Good lawyers assure their clients that all their rights will be respected.
+entire,adj.,"전체의, 전부의","whole, total, complete",Fires can destroy an entire factory in a matter of hours.
+compensate for,phr.,~을 보상하다; 상쇄하다,"1. make up for, atone for, 2. balance, offset",Companies must compensate communities when they pollute local rivers.
+postulate,v.,가정하다; 주장하다,"hypothesize, suppose; claim, propose",Isaac Newton postulated that gravity pulls objects toward the Earth.
+magnify,v.,확대하다,"enlarge, increase, amplify, intensify",Microscopes are used to magnify objects that are not visible to the naked eye.
+afford,v.,"주다, 제공하다","give, offer, provide, grant",High marks in high school afford students many opportunities to enter good universities.
+conclusive,adj.,"결정적인, 확실한","definitive, final, clear",The experiment failed to provide any conclusive evidence of the theory's validity.
+unsophisticated,adj.,"단순한, 복잡하지 않은","simple, uncomplicated, not complex",Early aircraft often rely on unsophisticated technology and fail shortly after takeoff.
+justified,adj.,정당한,"right, legitimate, just, reasonable",The CEO felt justified in firing the dishonest employee.
+deliberate,adj.,의도적인; 신중한,"1. intentional, designed, planned, 2. careful, cautious, thoughtful",The film's action scenes were deliberate attempts to grab attention of a specific audience.
+depend on,phr.,"~에 의존하다, 의지하다","rely on, count on",Baby dolphins depend on their mothers to feed and protect them.
+substantiate,v.,입증하다,"confirm, prove, authenticate, verify",Explorers must substantiate their claims with clear evidence.
+successively,adv.,잇따라서,"one after another, sequentially",Interviewers meet with candidates successively to evaluate their qualifications.
+pervasive,adj.,"퍼지는, 만연하는","widespread, prevalent",It is often argued that the pervasive influence of television on today's youth is harming society.
+strenuous,adj.,"격렬한, 힘든","intense, arduous, laborious",Gina's muscles were very sore after her strenuous workout at the gym.
+sleek,adj.,매끄러운,"smooth, silky","Octopuses usually have sleek skin, but it can become rough or bumpy when frightened."
+invoke,v.,"빌다, 기원하다","call upon, pray to, conjure",Many ancient peoples invoke their gods to bring a good harvest.
+impressive,adj.,"인상적인, 대단한","striking, remarkable",Cities across the country give impressive fireworks shows that last for hours on holidays.
+conjunction,n.,결합,"combination, union",The abundant sea life near South Africa is due to the conjunction of two major ocean currents.
+astoundingly,adv.,몹시 놀랍게도,"incredibly, surprisingly, shockingly, astonishingly",The fall colors in the mountains are astoundingly beautiful.`;
+
+const BUILTIN_NAME = 'TOEFL Day 1 (1~30번)';
+const BUILTIN_ID = 'builtin_day1';
+
+(function autoLoadBuiltin() {
+  const existing = sets.find(s => s.id === BUILTIN_ID);
+  if (!existing) {
+    const parsed = parseCSV(BUILTIN_CSV);
+    if (parsed.length) {
+      sets.unshift({ id: BUILTIN_ID, name: BUILTIN_NAME, words: parsed, created: Date.now() });
+      DB.save(sets);
+    }
+  }
+})();
+
+// INIT
+goHome();
+</script>
+</body>
+</html>
